@@ -1,130 +1,91 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router"
-          target="_blank"
-          rel="noopener"
-          >router</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex"
-          target="_blank"
-          rel="noopener"
-          >vuex</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
+    <h1>LeadHit</h1>
+    <form v-if="!isLoggedIn" @submit.prevent="handleSubmit">
+      <div class="form-floating mb-3">
+        <input
+          required
+          minlength="24"
+          name="siteId"
+          type="text"
+          class="form-control rounded-3"
+          id="siteId"
+          placeholder="name@example.com"
+        />
+        <label for="siteId">ID сайта</label>
+      </div>
+      <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">
+        Войти
+      </button>
+    </form>
+    <div v-else class="btn-wrapper">
+      <button
+        @click="logOut"
+        class="w-100 mb-2 btn btn-lg rounded-3 btn-primary"
+      >
+        Выйти
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
+import router from "@/router";
+import store from "@/store";
+
 export default {
   name: "HelloWorld",
   props: {
     msg: String,
   },
+  computed: {
+    isLoggedIn() {
+      return store.state.isLoggedIn;
+    },
+  },
+  methods: {
+    logOut() {
+      this.$store.commit("logOut");
+    },
+    async handleSubmit(e) {
+      const form = new FormData(e.target);
+      const formData = Object.fromEntries(form.entries());
+      let data;
+      try {
+        const res = await fetch(
+          "https://track-api.leadhit.io/client/test_auth",
+          {
+            headers: {
+              "Api-Key": `${formData.siteId}:eEZn8u05G3bzRpdL7RiHCvrYAYo`,
+              "Leadhit-Site-Id": formData.siteId,
+            },
+          }
+        );
+
+        if (res.status !== 200) {
+          throw new Error("Error");
+        }
+        data = await res.json();
+
+        if (data.message === "ok") {
+          this.$store.commit("logIn", formData.siteId);
+          router.push("/analytics");
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        e.target.reset();
+      }
+    },
+  },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+<style>
+form,
+.btn-wrapper {
+  width: 600px;
+  margin: 0 auto;
 }
 </style>

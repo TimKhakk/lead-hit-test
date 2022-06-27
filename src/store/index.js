@@ -5,7 +5,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    isLoggedIn: localStorage.getItem("leadhit-site-id"),
+    isLoggedIn: !!localStorage.getItem("leadhit-site-id"),
   },
   getters: {},
   mutations: {
