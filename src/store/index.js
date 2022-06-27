@@ -4,9 +4,20 @@ import Vuex from "vuex";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: {},
+  state: {
+    isLoggedIn: localStorage.getItem("leadhit-site-id"),
+  },
   getters: {},
-  mutations: {},
+  mutations: {
+    logIn(state, siteId) {
+      localStorage.setItem("leadhit-site-id", siteId);
+      state.isLoggedIn = true;
+    },
+    logOut(state) {
+      localStorage.removeItem("leadhit-site-id");
+      state.isLoggedIn = false;
+    },
+  },
   actions: {},
   modules: {},
 });
